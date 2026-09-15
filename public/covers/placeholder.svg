@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <rect width="600" height="800" fill="#e7e5e4"/>
+  <text x="300" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#78716c">E-book Cover</text>
+  <text x="300" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#a8a29e">No cover available</text>
+</svg>
