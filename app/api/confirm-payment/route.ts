@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServiceClient } from "@/lib/supabase/server";
+import { deriveDemoPaymentCode } from "@/lib/order";
 import { markOrderAsPaid } from "@/lib/payment";
 
 export async function POST(req: NextRequest) {
-  let body: { orderNumber?: string };
+  let body: { orderNumber?: string; demoPaymentCode?: string };
   try {
     body = await req.json();
   } catch {
@@ -15,9 +16,17 @@ export async function POST(req: NextRequest) {
   }
 
   const orderNumber = body?.orderNumber?.trim();
+  const demoPaymentCode = body?.demoPaymentCode?.trim() ?? "";
+
   if (!orderNumber) {
     return NextResponse.json(
       { ok: false, message: "Order number is required." },
+      { status: 400 }
+    );
+  }
+  if (!demoPaymentCode) {
+    return NextResponse.json(
+      { ok: false, message: "Please enter the demo payment code." },
       { status: 400 }
     );
   }
@@ -57,6 +66,14 @@ export async function POST(req: NextRequest) {
       alreadyPaid: true,
       emailStatus: "skipped"
     });
+  }
+
+  const expectedCode = deriveDemoPaymentCode(order.order_number);
+  if (demoPaymentCode.toUpperCase() !== expectedCode) {
+    return NextResponse.json(
+      { ok: false, message: "Invalid demo payment code" },
+      { status: 400 }
+    );
   }
 
   let emailStatus: "sent" | "failed";

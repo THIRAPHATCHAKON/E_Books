@@ -37,7 +37,7 @@ export default function CheckoutForm({ book }: { book: Book }) {
         trimmedEmail
       );
       if (result.ok) {
-        router.push(`/orders/${result.orderNumber}`);
+        router.push(`/payment/${result.orderNumber}`);
         return;
       }
       setError(result.message);
