@@ -76,6 +76,7 @@ export default function CheckoutForm({ book }: { book: Book }) {
             name="email"
             type="email"
             autoComplete="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jane@example.com"

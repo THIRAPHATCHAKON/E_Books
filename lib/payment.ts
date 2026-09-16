@@ -83,7 +83,11 @@ export async function markOrderAsPaid(
       downloadUrl: `${origin}/api/download/${orderNumber}`,
       attachment
     });
-  } catch {
+  } catch (err) {
+    console.error(
+      `[email] Failed to send order email (${orderNumber}) to ${customerEmail}:`,
+      err instanceof Error ? err.message : err
+    );
     emailStatus = "failed";
   }
 

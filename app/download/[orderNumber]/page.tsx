@@ -119,23 +119,26 @@ export default async function DownloadPage({
               <dt className="text-stone-600">Status</dt>
               <dd className="font-semibold text-emerald-700">PAID</dd>
             </div>
-            {emailParam === "sent" && (
-              <div className="flex flex-wrap justify-between gap-2 border-b border-stone-100 pb-3">
-                <dt className="text-stone-600">Email</dt>
-                <dd className="text-right font-medium text-emerald-700">
-                  Sent to {order.customer_email}
-                </dd>
-              </div>
-            )}
           </dl>
 
           {emailParam === "sent" ? (
-            <p className="mt-5 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              The E-book PDF has also been sent to your email.
-            </p>
+            <div className="mt-5 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm">
+              <p className="text-emerald-800">Your E-book has been sent to:</p>
+              <p className="mt-1 break-all font-semibold text-emerald-900">
+                {order.customer_email}
+              </p>
+            </div>
           ) : emailParam === "failed" ? (
-            <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Email delivery failed. You can still download your E-book below.
+            <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+              <p className="text-amber-800">
+                We couldn't send the E-book to:
+              </p>
+              <p className="mt-1 break-all font-semibold text-amber-900">
+                {order.customer_email}
+              </p>
+              <p className="mt-2 text-amber-800">
+                You can still download your E-book below.
+              </p>
             </div>
           ) : null}
 

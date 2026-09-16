@@ -27,11 +27,12 @@ export async function sendOrderEmail({
 
   const resend = new Resend(apiKey);
 
-  const { error } = await resend.emails.send({
-    from,
-    to: [to],
-    subject: `Your E-book is ready 📚`,
-    html: `
+  try {
+    const { error } = await resend.emails.send({
+      from,
+      to: [to],
+      subject: `Your E-book is ready 📚`,
+      html: `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#1c1917;">
         <h2 style="margin:0 0 4px;">E-book Shop</h2>
         <p style="margin:0 0 16px;color:#57534e;">Payment Successful ✓</p>
@@ -82,6 +83,12 @@ export async function sendOrderEmail({
   });
 
   if (error) {
-    throw new Error(`Resend rejected the email: ${error.message}`);
+      throw new Error(`Resend rejected the email: ${error.message}`);
+    }
+  } catch (err) {
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error("Resend email send failed unexpectedly.");
   }
 }
