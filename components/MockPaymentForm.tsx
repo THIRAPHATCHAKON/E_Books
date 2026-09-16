@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type ConfirmResponse = {
   ok: boolean;
-  emailStatus?: "sent" | "failed";
+  emailStatus?: "sent" | "failed" | "skipped";
   alreadyPaid?: boolean;
   message?: string;
 };
@@ -20,14 +20,16 @@ export default function MockPaymentForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
-    if (!success) return;
+    if (!redirectTarget) return;
     const timeout = setTimeout(() => {
-      router.push(`/download/${orderNumber}`);
+      router.push(redirectTarget);
     }, 2000);
     return () => clearTimeout(timeout);
-  }, [success, orderNumber, router]);
+  }, [redirectTarget, router]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,7 +39,9 @@ export default function MockPaymentForm({
       setError("Please enter the demo payment code.");
       return;
     }
+    if (submittedRef.current) return;
 
+    submittedRef.current = true;
     setLoading(true);
     try {
       const res = await fetch("/api/confirm-payment", {
@@ -48,17 +52,21 @@ export default function MockPaymentForm({
       const data: ConfirmResponse = await res.json();
 
       if (!res.ok || data.ok !== true) {
+        submittedRef.current = false;
         setError(data.message ?? "Could not confirm the payment. Try again.");
         return;
       }
 
-      if (data.alreadyPaid) {
+      if (data.alreadyPaid || data.emailStatus === "skipped") {
         router.push(`/download/${orderNumber}`);
         return;
       }
 
+      const emailQuery = data.emailStatus === "failed" ? "failed" : "sent";
       setSuccess(true);
+      setRedirectTarget(`/download/${orderNumber}?email=${emailQuery}`);
     } catch {
+      submittedRef.current = false;
       setError("Could not confirm the payment. Please try again.");
     } finally {
       setLoading(false);
@@ -110,7 +118,8 @@ export default function MockPaymentForm({
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="DEMO-XXXXXX"
-          className="w-full rounded-lg border border-stone-300 px-3 py-2 text-center text-sm font-mono tracking-widest uppercase outline-none focus:border-stone-500 focus:ring-2 focus:ring-stone-200"
+          disabled={loading}
+          className="w-full rounded-lg border border-stone-300 px-3 py-2 text-center text-sm font-mono tracking-widest uppercase outline-none focus:border-stone-500 focus:ring-2 focus:ring-stone-200 disabled:cursor-not-allowed disabled:opacity-60"
         />
       </div>
 
@@ -125,7 +134,7 @@ export default function MockPaymentForm({
         disabled={loading}
         className="w-full rounded-lg bg-emerald-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? "Confirming…" : "Confirm Mock Payment"}
+        {loading ? "Processing your order..." : "Confirm Mock Payment"}
       </button>
     </form>
   );

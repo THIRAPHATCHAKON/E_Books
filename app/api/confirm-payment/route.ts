@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServiceClient } from "@/lib/supabase/server";
 import { deriveDemoPaymentCode } from "@/lib/order";
-import { markOrderAsPaid } from "@/lib/payment";
+import { markOrderAsPaid, type EmailStatus } from "@/lib/payment";
 
 export async function POST(req: NextRequest) {
   let body: { orderNumber?: string; demoPaymentCode?: string };
@@ -76,13 +76,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let emailStatus: "sent" | "failed";
+  let emailStatus: EmailStatus;
   try {
     emailStatus = await markOrderAsPaid(
       client,
       {
         orderId: order.id,
         bookId: order.book_id,
+        customerName: order.customer_name,
         customerEmail: order.customer_email,
         orderNumber: order.order_number
       },
